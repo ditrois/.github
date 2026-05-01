@@ -1,0 +1,37 @@
+name: Add to project (reusable)
+
+# Reusable workflow for ditrois org. Adds the calling repo's issue/PR
+# to a Projects v2 board.
+#
+# Caller passes the project URL and the PAT (stored as a per-repo
+# secret because Free plan org secrets don't reach private repos).
+#
+# Caller example:
+#   jobs:
+#     call:
+#       uses: ditrois/.github/.github/workflows/add-to-project.yml@main
+#       secrets:
+#         token: ${{ secrets.ADD_TO_PROJECT_PAT }}
+#       with:
+#         project-url: https://github.com/orgs/ditrois/projects/4
+
+on:
+  workflow_call:
+    inputs:
+      project-url:
+        type: string
+        required: true
+        description: Projects v2 URL, e.g. https://github.com/orgs/ditrois/projects/4
+    secrets:
+      token:
+        required: true
+        description: PAT with Projects R/W on the org
+
+jobs:
+  add:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/add-to-project@v1
+        with:
+          project-url: ${{ inputs.project-url }}
+          github-token: ${{ secrets.token }}
