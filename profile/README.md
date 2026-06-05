@@ -2,9 +2,9 @@
 
 | Minggu | Bisnis | Project Owner |
 |---------|---------|--------------|
-| 1-2 | Property Marketing | Devi |
-| 3-4 | Seratus Art | Ersa |
-| 5-6 | Prime Sport | Ersa |
-| 7-8 | Aplikasi Mobile Indie | Prema |
-| 9-10 | Joki Lelang | Prema |
-| 11-12 | Jasa Drone Property | Prema |
+| 1 | Property Marketing | Devi |
+| 2 | Seratus Art | Ersa |
+| 3 | Prime Sport | Ersa |
+| 4 | Aplikasi Mobile Indie | Prema |
+| 5 | Joki Lelang | Prema |
+| 6 | Jasa Drone Property | Prema |
