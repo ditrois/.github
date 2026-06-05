@@ -1,10 +1,10 @@
-**Cek Tugas anda disini:** <https://github.com/orgs/ditrois/projects/4/views/5?filterQuery=assignee%3A%40me+is%3Aopen>
+**Cek Tugas Anda di sini:** https://github.com/orgs/ditrois/projects/4/views/5?filterQuery=assignee%3A%40me+is%3Aopen
 
-List Bisnis:
-- Property Marketing (week 1-2)
-- Seratus Art (week 3-4)
-- Prime Sport (week 5-6)
-- Undangan Digital (week 7-8)
-- Aplikasi mobile indie (week 9-10)
-- Joki Lelang (week 11-12)
-- Jasa Drone Property (week 13-14)
+| Minggu | Bisnis | Project Owner |
+|---------|---------|--------------|
+| 1-2 | Property Marketing | Devi |
+| 3-4 | Seratus Art | Ersa |
+| 5-6 | Prime Sport | Ersa |
+| 7-8 | Aplikasi Mobile Indie | Prema |
+| 9-10 | Joki Lelang | Prema |
+| 11-12 | Jasa Drone Property | Prema |
