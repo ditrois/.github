@@ -1,200 +1,183 @@
 ---
-name: list-org-assigned-issues
-description: Reliably list GitHub issues assigned to any supplied user across every repository in any supplied organization, then optionally rank the open work from easiest to hardest. Use for requests such as "list all issues assigned to USER in ORG", "show USER's work across all ORG repos", or "sort ORG issues assigned to USER by easiest work". Never trust a single organization-wide connector search when completeness matters; enumerate repositories and search each repository individually.
+name: tugas-saya
+description: List semua GitHub issue yang ditugaskan kepada user tertentu di seluruh repository organisasi, lalu opsional urutkan dari tugas termudah. Gunakan untuk permintaan seperti "list semua tugas USER di ORG" atau "urutkan tugas USER berdasarkan yang termudah". Prioritaskan satu GitHub GraphQL search query untuk seluruh organisasi, verifikasi completeness, dan fallback ke pencarian per-repository bila hasil melebihi batas atau GraphQL tidak tersedia.
 ---
 
-# List Organization Assigned Issues
+# Tugas Saya
 
-Reliably collect issues assigned to a dynamic GitHub user across all repositories in a dynamic GitHub organization.
+Kumpulkan issue milik assignee tertentu dari seluruh repository dalam sebuah GitHub organization.
 
-## Inputs
+## Input
 
-Resolve these values from the user's request:
+- `ORG`: GitHub organization login.
+- `ASSIGNEE`: exact GitHub username.
+- `STATE`: default `open`; gunakan `closed` atau `all` bila diminta.
+- `SORT_MODE`: `easiest` bila pengguna meminta urutan termudah.
+- `INCLUDE_PRS`: default `false`.
 
-- `ORG`: GitHub organization login, for example `ditrois`.
-- `ASSIGNEE`: exact GitHub username, for example `Premanandaa`.
-- `STATE`: `open` by default. Use `closed` or `all` only when requested.
-- `SORT_MODE`: `easiest` when the user asks for effort ranking; otherwise use `repository` or `updated` as requested.
-- `INCLUDE_PRS`: `false` by default. GitHub issue search can include pull requests, so explicitly exclude PRs from the final result unless requested.
+Untuk "saya", "my", atau `@me`, resolve login GitHub user yang terautentikasi terlebih dahulu.
 
-Usernames and organization names are dynamic. Do not hard-code `ditrois`, `Premanandaa`, or `@me`.
+## Jalur utama: satu GraphQL query
 
-## Required tools
+Gunakan satu request GraphQL dengan GitHub search connection:
 
-Prefer the connected GitHub app for repository discovery and issue inspection. Use GitHub CLI as the authoritative fallback when available.
-
-## Reliability rule
-
-Do not rely on one connector call that searches multiple repositories or an entire organization. Some connectors can return only a partial subset.
-
-For complete results:
-
-1. Enumerate every repository accessible under `ORG`.
-2. Search each repository individually for `assignee:ASSIGNEE` and the requested state.
-3. Merge and deduplicate results by canonical key `repository_full_name#issue_number`.
-4. Exclude pull requests unless `INCLUDE_PRS=true`.
-5. Report repositories searched, repositories with matches, result count, and any repository that failed.
-
-A result is not complete unless every discovered repository was searched or explicitly reported as failed/inaccessible.
-
-## Workflow A: GitHub connector
-
-### 1. Resolve the organization installation
-
-- List GitHub App installations.
-- Match the installation whose account login equals `ORG`, case-insensitively.
-- If there is no matching installation, state that the connected GitHub app cannot access that organization.
-
-### 2. Enumerate every repository
-
-- Call the installation repository listing with pagination.
-- Continue until a page returns fewer than the requested page size or no repositories.
-- Keep only repositories whose owner login equals `ORG`.
-- Include private, public, and archived repositories unless the user asks to exclude archived repositories.
-- Record the exact repository count and full names.
-
-### 3. Search one repository at a time
-
-For each repository, call issue search with:
-
-- `repository_full_name`: exactly one repository, never an array.
-- `query`: `assignee:ASSIGNEE`.
-- `state`: `open` or `closed` when a single state is requested.
-- `topn`: high enough to avoid truncation, preferably 100.
-
-When `STATE=all`, run both `open` and `closed` searches per repository and merge them.
-
-Do not put `org:`, `repo:`, `is:issue`, or `is:open` qualifiers inside the connector query when equivalent structured parameters are available.
-
-### 4. Validate matches
-
-For every returned item:
-
-- Confirm its repository belongs to `ORG`.
-- Confirm the assignee list contains `ASSIGNEE`, case-insensitively. Fetch the issue when the search result does not include assignees.
-- Exclude pull requests. A result with pull-request metadata is not an issue.
-- Preserve title, repository, issue number, state, URL, body, labels, assignees, milestone, comments count, created date, and updated date when available.
-
-### 5. Deduplicate
-
-Use this key:
-
-`lower(repository_full_name) + "#" + issue_number`
-
-If duplicates disagree, prefer the fetched issue snapshot over a search snippet.
-
-## Workflow B: GitHub CLI fallback
-
-When GitHub CLI is available and authenticated, use it to cross-check the connector result.
-
-For one state:
-
-```bash
-gh search issues \
-  --owner "$ORG" \
-  --assignee "$ASSIGNEE" \
-  --state "$STATE" \
-  --limit 1000 \
-  --json repository,number,title,state,url,assignees,labels,createdAt,updatedAt,body
+```graphql
+query AssignedIssues($query: String!) {
+  search(type: ISSUE, query: $query, first: 100) {
+    issueCount
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    nodes {
+      ... on Issue {
+        number
+        title
+        state
+        url
+        body
+        createdAt
+        updatedAt
+        repository {
+          nameWithOwner
+        }
+        assignees(first: 20) {
+          nodes { login }
+        }
+        labels(first: 20) {
+          nodes { name }
+        }
+        milestone { title dueOn }
+        comments { totalCount }
+      }
+    }
+  }
+}
 ```
 
-For all states, omit `--state` and still use `--limit 1000`.
+Buat variable `query` sebagai berikut:
 
-Exclude pull requests by keeping only results returned by `gh search issues`; do not substitute `gh search prs`.
+- Open issues: `org:ORG assignee:ASSIGNEE is:issue is:open`
+- Closed issues: `org:ORG assignee:ASSIGNEE is:issue is:closed`
+- All states: `org:ORG assignee:ASSIGNEE is:issue`
 
-If the CLI count and connector count differ:
+Contoh dengan GitHub CLI:
 
-1. Treat the CLI result as the completeness cross-check.
-2. Identify missing repository/issue keys.
-3. Fetch missing issues directly through the connector when possible.
-4. Clearly report any unresolved mismatch.
+```bash
+gh api graphql \
+  -f query='query AssignedIssues($query: String!) {
+    search(type: ISSUE, query: $query, first: 100) {
+      issueCount
+      pageInfo { hasNextPage endCursor }
+      nodes {
+        ... on Issue {
+          number title state url body createdAt updatedAt
+          repository { nameWithOwner }
+          assignees(first: 20) { nodes { login } }
+          labels(first: 20) { nodes { name } }
+          milestone { title dueOn }
+          comments { totalCount }
+        }
+      }
+    }
+  }' \
+  -F query="org:$ORG assignee:$ASSIGNEE is:issue is:open"
+```
 
-## Effort ranking
+## Batas dan verifikasi wajib
 
-Only rank open issues unless the user explicitly requests closed issues to be ranked.
+GitHub GraphQL search hanya mengembalikan maksimum 100 node per request.
 
-Estimate remaining effort from the current issue body, labels, latest human comments, dependencies, and whether work has already been submitted. Ignore stale-bot or automation comments when estimating substantive progress.
+Satu-query mode hanya boleh dianggap lengkap bila semua kondisi berikut benar:
 
-Assign a score from 1 to 5:
+1. `issueCount <= 100`.
+2. `pageInfo.hasNextPage == false`.
+3. Jumlah node Issue yang diterima sama dengan `issueCount`.
+4. Semua node memiliki `repository.nameWithOwner` yang owner-nya sama dengan `ORG`.
+5. Semua node benar-benar Issue, bukan PullRequest.
+6. Semua node memuat `ASSIGNEE` pada daftar assignees secara case-insensitive.
 
-### Score 1 — Very easy
+Jika salah satu kondisi gagal, jangan mengklaim hasil lengkap.
 
-- One clear action.
-- No external dependency.
-- Usually under one hour.
-- Examples: update a link, make several posts, fill a known field, confirm access.
+## Fallback bila satu query tidak cukup
 
-### Score 2 — Easy
+Gunakan fallback bila:
 
-- Small research, data entry, or a few repetitive actions.
-- Limited coordination.
-- Usually one to three hours.
+- raw GraphQL tidak tersedia pada connector/runtime;
+- `issueCount > 100`;
+- `hasNextPage == true`;
+- jumlah node tidak sama dengan `issueCount`;
+- request GraphQL gagal;
+- hasil verifikasi tidak konsisten.
 
-### Score 3 — Medium
+Fallback yang benar:
 
-- Several steps, moderate research, coordination, or a half-day task.
-- May depend on another person but can substantially progress now.
+1. Temukan GitHub App installation untuk `ORG`.
+2. Enumerasi semua repository dengan `list_repositories_by_installation`, `page_size: 100`, dan pagination `page_offset`.
+3. Panggil `search_issues` untuk setiap repository secara terpisah:
+   - `repository_full_name`: satu repository saja;
+   - `query`: `assignee:ASSIGNEE`;
+   - `state`: requested state;
+   - `topn`: 100.
+4. Untuk `STATE=all`, cari open dan closed secara terpisah.
+5. Gabungkan dan deduplicate berdasarkan `lower(repository_full_name) + "#" + issue_number`.
+6. Laporkan repository yang gagal diperiksa.
 
-### Score 4 — Hard
+Jangan pernah menggunakan satu `search_issues` dengan array banyak repository sebagai bukti completeness.
 
-- Multi-day work, extensive historical review, campaign execution, procurement, or several stakeholders.
-- Significant ambiguity or dependencies.
+## Cross-check
 
-### Score 5 — Very hard / blocked
+Bila GraphQL dan fallback sama-sama tersedia, bandingkan canonical key `repository#number`.
 
-- Government/legal processes, uncontrolled external waiting, unclear ownership, major technical implementation, or critical missing prerequisites.
+- Bila sama: hasil terverifikasi.
+- Bila berbeda: fetch issue yang hilang secara langsung dan laporkan mismatch yang belum terselesaikan.
+- Jangan memilih hasil yang lebih sedikit hanya karena berasal dari satu query.
 
-Tie-breakers, in order:
+## Penilaian kemudahan
 
-1. Fewer blockers first.
-2. Smaller remaining scope first.
-3. Earlier explicit due date first.
-4. Older updated date first.
+Nilai sisa pekerjaan berdasarkan body, checklist, labels, komentar manusia terbaru, dependencies, blockers, deadline, akses eksternal, dan progress yang sudah ada.
 
-Always label estimates as judgments, not facts.
+- `1 — Sangat mudah`: satu tindakan jelas, biasanya <1 jam.
+- `2 — Mudah`: beberapa langkah kecil atau riset ringan, biasanya 1–3 jam.
+- `3 — Sedang`: beberapa langkah dan koordinasi, sekitar setengah hari.
+- `4 — Sulit`: multi-hari, scope besar, atau banyak stakeholder.
+- `5 — Sangat sulit/blocked`: implementasi besar, dependency eksternal kritis, legal/pemerintah, atau prerequisite hilang.
 
-## Output format
+Tie-breaker:
 
-Start with a completeness summary:
+1. blocker lebih sedikit;
+2. scope tersisa lebih kecil;
+3. deadline lebih dekat;
+4. updated date lebih lama.
 
-- Organization.
-- Assignee.
-- Requested state.
-- Repositories searched.
-- Repositories containing matches.
+## Output
+
+Mulai dengan:
+
+- Organization dan assignee.
+- State.
+- Metode: `single GraphQL query` atau `per-repository fallback`.
+- `issueCount` GraphQL bila tersedia.
 - Total unique issues.
-- Failed or inaccessible repositories, if any.
+- Status verifikasi completeness.
+- Repository gagal atau mismatch bila ada.
 
-Then list issues in the requested order. For each issue include:
+Untuk setiap issue tampilkan:
 
-1. Linked `repository #number — title`.
-2. Estimated difficulty and effort range when ranking was requested.
-3. A concise description of remaining work.
-4. Important blocker, dependency, deadline, or stale/escalation label.
+1. Link `repository #number — title`.
+2. Estimasi tingkat kesulitan dan waktu.
+3. Ringkasan sisa pekerjaan.
+4. Blocker/dependency/deadline penting.
+5. Alasan urutan.
 
-End with a recommended execution order when `SORT_MODE=easiest`.
+Jangan mengatakan "semua tugas" kecuali verifikasi completeness berhasil.
 
-Do not claim "all repositories" unless repository enumeration completed and every repository was searched or explicitly reported as failed.
+## Checklist sebelum menjawab
 
-## Verification checklist
-
-Before answering, confirm all of the following:
-
-- [ ] `ORG` came from the user or was unambiguously resolved.
-- [ ] `ASSIGNEE` came from the user or was unambiguously resolved.
-- [ ] Every accessible repository in `ORG` was enumerated with pagination.
-- [ ] Each repository was searched individually.
-- [ ] Pull requests were excluded unless requested.
-- [ ] Results were deduplicated by repository and issue number.
-- [ ] Search-result assignees were verified when needed.
-- [ ] Counts and failed repositories were disclosed.
-- [ ] Effort ranking reflects remaining work, not just title length.
-- [ ] A CLI cross-check was used when available, or its absence was disclosed.
-
-## Example requests
-
-- `List all open issues assigned to premanandaa across every repo in ditrois and sort easiest first.`
-- `Show all closed issues assigned to Madeersani in ditrois, grouped by repository.`
-- `List my open issues across Expensify.`
-
-For `my` or `@me`, resolve the authenticated GitHub username first, then use that exact login as `ASSIGNEE`.
+- [ ] `ORG` dan `ASSIGNEE` benar.
+- [ ] Single GraphQL query dicoba terlebih dahulu bila raw GraphQL tersedia.
+- [ ] `issueCount`, `hasNextPage`, dan jumlah node diperiksa.
+- [ ] Semua result adalah Issue dan assignee tervalidasi.
+- [ ] Fallback dijalankan bila one-query mode tidak aman atau tidak tersedia.
+- [ ] Hasil dideduplicate.
+- [ ] Completeness atau keterbatasan dilaporkan secara jujur.
