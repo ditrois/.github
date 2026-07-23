@@ -46,5 +46,83 @@
     "repository": "ditrois/personal-jyo",
     "title_pattern": "^Laporan Keuangan Bulanan Keluarga$",
     "estimate": 2
+  },
+  {
+    "name": "property-weekly-property-sourcing",
+    "repository": "ditrois/property",
+    "title_pattern": "^Cari dan publish\\s+3\\s+listing properti baru\\b",
+    "estimate": 3
+  },
+  {
+    "name": "property-automated-buyer-search",
+    "repository": "ditrois/property",
+    "title_pattern": "^Cari dan tawarkan pilihan properti untuk buyer\\s*#\\d+\\b",
+    "estimate": 0.25
+  },
+  {
+    "name": "property-automated-buyer-follow-up",
+    "repository": "ditrois/property",
+    "title_pattern": "^Follow up buyer cocok\\s*:",
+    "estimate": 0.25
+  },
+  {
+    "name": "property-daily-marketplace-posting",
+    "repository": "ditrois/property",
+    "title_pattern": "^Tambah at least 5 postingan baru di FB marketplace per hari\\b",
+    "estimate": 0.5
+  },
+  {
+    "name": "property-weekly-non-property-marketplace-posting",
+    "repository": "ditrois/property",
+    "title_pattern": "^Posting produk non-properti di FB Marketplace\\b",
+    "estimate": 0.5
+  },
+  {
+    "name": "property-daily-buyer-data-entry",
+    "repository": "ditrois/property",
+    "title_pattern": "^Masukkan semua calon pembeli dari chat yang belum tercatat ke database\\b",
+    "estimate": 0.25
+  },
+  {
+    "name": "property-monthly-developer-sourcing",
+    "repository": "ditrois/property",
+    "title_pattern": "^Cari 1 developer property di Gianyar, Denpasar, Bangli, Klungkung, dan sekitarnya\\b",
+    "estimate": 4
+  },
+  {
+    "name": "property-monthly-notary-outreach",
+    "repository": "ditrois/property",
+    "title_pattern": "^Chat 10 notaris/PPAT untuk penawaran Patok BPN\\b",
+    "estimate": 4
+  },
+  {
+    "name": "property-monthly-media-improvement",
+    "repository": "ditrois/property",
+    "title_pattern": "^Cari published property di website yang gambar dan videonya jelek\\b",
+    "estimate": 20
+  },
+  {
+    "name": "property-monthly-finance-closing",
+    "repository": "ditrois/property",
+    "title_pattern": "^Closing Keuangan Property\\b",
+    "estimate": 1
+  },
+  {
+    "name": "property-weekly-rumah123-review",
+    "repository": "ditrois/property",
+    "title_pattern": "^Review Listing Rumah123\\b",
+    "estimate": 1
+  },
+  {
+    "name": "property-weekly-sharing-session",
+    "repository": "ditrois/property",
+    "title_pattern": "^Persiapan Sharing Session\\b",
+    "estimate": 1
+  },
+  {
+    "name": "property-weekly-status-review",
+    "repository": "ditrois/property",
+    "title_pattern": "^Update status semua properti saya sampai tugas kosong\\b",
+    "estimate": 0.5
   }
 ]

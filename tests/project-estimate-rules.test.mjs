@@ -57,6 +57,71 @@ const recurringIssues = [
     'Laporan Keuangan Bulanan Keluarga',
     2,
   ],
+  [
+    'ditrois/property',
+    'Cari dan publish 3 listing properti baru — 2026-W30',
+    3,
+  ],
+  [
+    'ditrois/property',
+    'Cari dan tawarkan pilihan properti untuk buyer #144',
+    0.25,
+  ],
+  [
+    'ditrois/property',
+    'Follow up buyer cocok: Tanah 90m² di Guwang, Sukawati',
+    0.25,
+  ],
+  [
+    'ditrois/property',
+    'Tambah at least 5 postingan baru di FB marketplace per hari, Kamis, 23 Juli 2026 — Akun: Dewik/Fitri Property',
+    0.5,
+  ],
+  [
+    'ditrois/property',
+    'Posting produk non-properti di FB Marketplace, Senin, 6 Juli 2026',
+    0.5,
+  ],
+  [
+    'ditrois/property',
+    'Masukkan semua calon pembeli dari chat yang belum tercatat ke database',
+    0.25,
+  ],
+  [
+    'ditrois/property',
+    'Cari 1 developer property di Gianyar, Denpasar, Bangli, Klungkung, dan sekitarnya — Juli 2026',
+    4,
+  ],
+  [
+    'ditrois/property',
+    'Chat 10 notaris/PPAT untuk penawaran Patok BPN — Agustus 2026',
+    4,
+  ],
+  [
+    'ditrois/property',
+    'Cari published property di website yang gambar dan videonya jelek — Juli 2026',
+    20,
+  ],
+  [
+    'ditrois/property',
+    'Closing Keuangan Property — June 2026',
+    1,
+  ],
+  [
+    'ditrois/property',
+    'Review Listing Rumah123 — Minggu 20 July 2026',
+    1,
+  ],
+  [
+    'ditrois/property',
+    'Persiapan Sharing Session — Senin, 27 Juli 2026 (2026-07-27)',
+    1,
+  ],
+  [
+    'ditrois/property',
+    'Update status semua properti saya sampai tugas kosong — 2026-W30 (20 Juli 2026–26 Juli 2026)',
+    0.5,
+  ],
 ];
 
 for (const [repository, title, expected] of recurringIssues) {
@@ -68,6 +133,13 @@ for (const [repository, title, expected] of recurringIssues) {
 test('rules are scoped to their repository', () => {
   assert.equal(
     estimateFor('ditrois/general', 'Closing Kas Bulanan - June 2026'),
+    null,
+  );
+  assert.equal(
+    estimateFor(
+      'ditrois/seratus-art',
+      'Cari dan publish 3 listing properti baru — 2026-W30',
+    ),
     null,
   );
 });
@@ -88,4 +160,10 @@ test('shared workflow loads repository-aware rules after adding the item', () =>
   assert.match(workflow, /actions\/add-to-project@v1\.0\.2/);
   assert.match(workflow, /Apply deterministic estimate/);
   assert.match(workflow, /ruleRepository\.toLowerCase\(\) === repository\.toLowerCase\(\)/);
+});
+
+test('the canonical rule set is complete and repository-scoped', () => {
+  assert.equal(rules.length, 21);
+  assert.equal(new Set(rules.map(({ name }) => name)).size, rules.length);
+  assert.ok(rules.every(({ repository }) => repository.startsWith('ditrois/')));
 });
