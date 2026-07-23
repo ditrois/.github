@@ -1,0 +1,50 @@
+[
+  {
+    "name": "seratus-art-daily-marketplace-posting",
+    "repository": "ditrois/seratus-art",
+    "title_pattern": "^Posting 5 produk seratus art di FB Marketplace\\b",
+    "estimate": 0.5
+  },
+  {
+    "name": "seratus-art-quarterly-shipping-review",
+    "repository": "ditrois/seratus-art",
+    "title_pattern": "^Cek/Update Ongkir Etsy/Kurasi\\b",
+    "estimate": 4
+  },
+  {
+    "name": "seratus-art-monthly-cash-closing",
+    "repository": "ditrois/seratus-art",
+    "title_pattern": "^Closing Kas Bulanan\\b",
+    "estimate": 4
+  },
+  {
+    "name": "seratus-art-monthly-etsy-billing",
+    "repository": "ditrois/seratus-art",
+    "title_pattern": "^Cek Billing Etsy\\b",
+    "estimate": 0.5
+  },
+  {
+    "name": "seratus-art-quarterly-production-price-update",
+    "repository": "ditrois/seratus-art",
+    "title_pattern": "^Update Harga Produksi Produk\\b",
+    "estimate": 4
+  },
+  {
+    "name": "general-monthly-bpjs-payment",
+    "repository": "ditrois/general",
+    "title_pattern": "^Pembayaran BPJS TK\\b",
+    "estimate": 1
+  },
+  {
+    "name": "general-monthly-payroll",
+    "repository": "ditrois/general",
+    "title_pattern": "^Proses gaji bulanan\\b",
+    "estimate": 1
+  },
+  {
+    "name": "personal-jyo-monthly-family-finance-report",
+    "repository": "ditrois/personal-jyo",
+    "title_pattern": "^Laporan Keuangan Bulanan Keluarga$",
+    "estimate": 2
+  }
+]

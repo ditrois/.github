@@ -35,3 +35,129 @@ jobs:
         with:
           project-url: ${{ inputs.project-url }}
           github-token: ${{ secrets.token }}
+
+      - name: Apply deterministic estimate
+        uses: actions/github-script@v7
+        env:
+          PROJECT_URL: ${{ inputs.project-url }}
+        with:
+          github-token: ${{ secrets.token }}
+          script: |
+            const issue = context.payload.issue;
+            const repository = context.payload.repository?.full_name;
+            if (!issue || !repository) {
+              core.info('No issue payload; deterministic estimation skipped.');
+              return;
+            }
+
+            const rulesResponse = await github.rest.repos.getContent({
+              owner: 'ditrois',
+              repo: '.github',
+              path: '.github/project-estimate-rules.json',
+              ref: 'main',
+            });
+            if (Array.isArray(rulesResponse.data) || !rulesResponse.data.content) {
+              core.setFailed('Could not load the organization estimate rules.');
+              return;
+            }
+
+            const rules = JSON.parse(
+              Buffer.from(rulesResponse.data.content, 'base64').toString('utf8'),
+            );
+            const rule = rules.find(
+              ({ repository: ruleRepository, title_pattern: pattern }) =>
+                ruleRepository.toLowerCase() === repository.toLowerCase()
+                && new RegExp(pattern, 'i').test(issue.title),
+            );
+
+            if (!rule) {
+              core.info(
+                `No deterministic estimate rule matched: ${repository} — ${issue.title}`,
+              );
+              return;
+            }
+
+            const projectMatch = process.env.PROJECT_URL.match(
+              /github\.com\/orgs\/([^/]+)\/projects\/(\d+)/,
+            );
+            if (!projectMatch) {
+              core.setFailed(`Invalid PROJECT_URL: ${process.env.PROJECT_URL}`);
+              return;
+            }
+
+            const [, owner, projectNumber] = projectMatch;
+            const data = await github.graphql(
+              `query($owner: String!, $number: Int!, $contentId: ID!) {
+                organization(login: $owner) {
+                  projectV2(number: $number) {
+                    id
+                    field(name: "Estimate") {
+                      ... on ProjectV2Field {
+                        id
+                      }
+                    }
+                  }
+                }
+                node(id: $contentId) {
+                  ... on Issue {
+                    projectItems(first: 20) {
+                      nodes {
+                        id
+                        project {
+                          id
+                        }
+                      }
+                    }
+                  }
+                }
+              }`,
+              {
+                owner,
+                number: Number(projectNumber),
+                contentId: issue.node_id,
+              },
+            );
+
+            const project = data.organization?.projectV2;
+            const item = data.node?.projectItems?.nodes?.find(
+              ({ project: itemProject }) => itemProject.id === project?.id,
+            );
+
+            if (!project?.field?.id || !item?.id) {
+              core.setFailed(
+                `Could not find the Estimate field or project item for ${issue.html_url}`,
+              );
+              return;
+            }
+
+            await github.graphql(
+              `mutation(
+                $projectId: ID!,
+                $itemId: ID!,
+                $fieldId: ID!,
+                $estimate: Float!
+              ) {
+                updateProjectV2ItemFieldValue(
+                  input: {
+                    projectId: $projectId,
+                    itemId: $itemId,
+                    fieldId: $fieldId,
+                    value: { number: $estimate }
+                  }
+                ) {
+                  projectV2Item {
+                    id
+                  }
+                }
+              }`,
+              {
+                projectId: project.id,
+                itemId: item.id,
+                fieldId: project.field.id,
+                estimate: Number(rule.estimate),
+              },
+            );
+
+            core.info(
+              `Set Estimate=${rule.estimate}h using rule "${rule.name}" for ${issue.html_url}`,
+            );
