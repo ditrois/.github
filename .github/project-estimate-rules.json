@@ -42,6 +42,12 @@
     "estimate": 1
   },
   {
+    "name": "general-monthly-project-improvement",
+    "repository": "ditrois/general",
+    "label_pattern": "^monthly-project-improvement$",
+    "estimate": 8
+  },
+  {
     "name": "personal-jyo-monthly-family-finance-report",
     "repository": "ditrois/personal-jyo",
     "title_pattern": "^Laporan Keuangan Bulanan Keluarga$",

@@ -65,6 +65,12 @@ const recurringIssues = [
     1,
   ],
   [
+    'ditrois/general',
+    '[September 2026] Peningkatan Proyek — Produk Digital Kos',
+    8,
+    ['monthly-project-improvement'],
+  ],
+  [
     'ditrois/personal-jyo',
     'Laporan Keuangan Bulanan Keluarga',
     2,
@@ -154,6 +160,17 @@ test('buyer data entry keeps a 0.25 estimate when its generated title changes', 
   );
 });
 
+test('monthly project improvement keeps an 8 hour estimate when its title changes', () => {
+  assert.equal(
+    estimateFor(
+      'ditrois/general',
+      '[October 2026] Project Review — Produk Digital Kos',
+      ['monthly-project-improvement', 'Skip Stale'],
+    ),
+    8,
+  );
+});
+
 test('rules are scoped to their repository', () => {
   assert.equal(
     estimateFor('ditrois/general', 'Closing Kas Bulanan - June 2026'),
@@ -189,7 +206,7 @@ test('shared workflow loads repository-aware rules after adding the item', () =>
 });
 
 test('the canonical rule set is complete and repository-scoped', () => {
-  assert.equal(rules.length, 21);
+  assert.equal(rules.length, 22);
   assert.equal(new Set(rules.map(({ name }) => name)).size, rules.length);
   assert.ok(rules.every(({ repository }) => repository.startsWith('ditrois/')));
   assert.ok(rules.every(({ title_pattern: title, label_pattern: label }) => title || label));
