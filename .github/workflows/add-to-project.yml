@@ -64,11 +64,28 @@ jobs:
             const rules = JSON.parse(
               Buffer.from(rulesResponse.data.content, 'base64').toString('utf8'),
             );
-            const rule = rules.find(
-              ({ repository: ruleRepository, title_pattern: pattern }) =>
-                ruleRepository.toLowerCase() === repository.toLowerCase()
-                && new RegExp(pattern, 'i').test(issue.title),
-            );
+            const issueLabels = (issue.labels ?? [])
+              .map((label) => typeof label === 'string' ? label : label.name)
+              .filter(Boolean);
+            const rule = rules.find(({
+              repository: ruleRepository,
+              title_pattern: titlePattern,
+              label_pattern: labelPattern,
+            }) => {
+              const repositoryMatches =
+                ruleRepository.toLowerCase() === repository.toLowerCase();
+              const titleMatches = !titlePattern
+                || new RegExp(titlePattern, 'i').test(issue.title);
+              const labelMatches = !labelPattern
+                || issueLabels.some((label) =>
+                  new RegExp(labelPattern, 'i').test(label),
+                );
+
+              return repositoryMatches
+                && Boolean(titlePattern || labelPattern)
+                && titleMatches
+                && labelMatches;
+            });
 
             if (!rule) {
               core.info(
