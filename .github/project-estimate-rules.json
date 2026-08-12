@@ -80,7 +80,7 @@
   {
     "name": "property-daily-buyer-data-entry",
     "repository": "ditrois/property",
-    "title_pattern": "^Masukkan semua calon pembeli dari chat yang belum tercatat ke database\\b",
+    "label_pattern": "^buyer-data-entry$",
     "estimate": 0.25
   },
   {

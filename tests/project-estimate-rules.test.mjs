@@ -6,12 +6,24 @@ const rules = JSON.parse(
   readFileSync(new URL('../.github/project-estimate-rules.json', import.meta.url)),
 );
 
-function estimateFor(repository, title) {
-  const rule = rules.find(
-    ({ repository: ruleRepository, title_pattern: pattern }) =>
-      ruleRepository.toLowerCase() === repository.toLowerCase()
-      && new RegExp(pattern, 'iu').test(title),
-  );
+function estimateFor(repository, title, labels = []) {
+  const rule = rules.find(({
+    repository: ruleRepository,
+    title_pattern: titlePattern,
+    label_pattern: labelPattern,
+  }) => {
+    const repositoryMatches =
+      ruleRepository.toLowerCase() === repository.toLowerCase();
+    const titleMatches = !titlePattern
+      || new RegExp(titlePattern, 'iu').test(title);
+    const labelMatches = !labelPattern
+      || labels.some((label) => new RegExp(labelPattern, 'iu').test(label));
+
+    return repositoryMatches
+      && Boolean(titlePattern || labelPattern)
+      && titleMatches
+      && labelMatches;
+  });
 
   return rule?.estimate ?? null;
 }
@@ -86,6 +98,7 @@ const recurringIssues = [
     'ditrois/property',
     'Masukkan semua calon pembeli dari chat yang belum tercatat ke database',
     0.25,
+    ['buyer-data-entry'],
   ],
   [
     'ditrois/property',
@@ -124,11 +137,22 @@ const recurringIssues = [
   ],
 ];
 
-for (const [repository, title, expected] of recurringIssues) {
+for (const [repository, title, expected, labels = []] of recurringIssues) {
   test(`${repository}: ${title}`, () => {
-    assert.equal(estimateFor(repository, title), expected);
+    assert.equal(estimateFor(repository, title, labels), expected);
   });
 }
+
+test('buyer data entry keeps a 0.25 estimate when its generated title changes', () => {
+  assert.equal(
+    estimateFor(
+      'ditrois/property',
+      'Periksa calon pembeli baru dari seluruh chat',
+      ['buyer-data-entry', 'daily-task'],
+    ),
+    0.25,
+  );
+});
 
 test('rules are scoped to their repository', () => {
   assert.equal(
@@ -160,10 +184,13 @@ test('shared workflow loads repository-aware rules after adding the item', () =>
   assert.match(workflow, /actions\/add-to-project@v1\.0\.2/);
   assert.match(workflow, /Apply deterministic estimate/);
   assert.match(workflow, /ruleRepository\.toLowerCase\(\) === repository\.toLowerCase\(\)/);
+  assert.match(workflow, /label_pattern: labelPattern/);
+  assert.match(workflow, /issueLabels\.some/);
 });
 
 test('the canonical rule set is complete and repository-scoped', () => {
   assert.equal(rules.length, 21);
   assert.equal(new Set(rules.map(({ name }) => name)).size, rules.length);
   assert.ok(rules.every(({ repository }) => repository.startsWith('ditrois/')));
+  assert.ok(rules.every(({ title_pattern: title, label_pattern: label }) => title || label));
 });
