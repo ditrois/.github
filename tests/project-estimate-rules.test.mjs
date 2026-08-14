@@ -149,14 +149,14 @@ for (const [repository, title, expected, labels = []] of recurringIssues) {
   });
 }
 
-test('buyer data entry keeps a 0.25 estimate when its generated title changes', () => {
+test('large buyer backfills are not mistaken for the 0.25 daily task', () => {
   assert.equal(
     estimateFor(
       'ditrois/property',
-      'Periksa calon pembeli baru dari seluruh chat',
-      ['buyer-data-entry', 'daily-task'],
+      'Backfill semua calon pembeli dari seluruh riwayat chat yang belum tercatat',
+      ['buyer-data-entry'],
     ),
-    0.25,
+    null,
   );
 });
 
