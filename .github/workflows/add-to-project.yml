@@ -31,7 +31,134 @@ jobs:
   add:
     runs-on: self-hosted
     steps:
+      - name: Restore reopened item to Todo
+        if: ${{ github.event.action == 'reopened' }}
+        uses: actions/github-script@v7
+        env:
+          PROJECT_URL: ${{ inputs.project-url }}
+        with:
+          github-token: ${{ secrets.token }}
+          script: |
+            const content = context.payload.issue ?? context.payload.pull_request;
+            if (!content) {
+              core.setFailed('No issue or pull request payload for reopened event.');
+              return;
+            }
+
+            const projectMatch = process.env.PROJECT_URL.match(
+              /github\.com\/orgs\/([^/]+)\/projects\/(\d+)/,
+            );
+            if (!projectMatch) {
+              core.setFailed(`Invalid PROJECT_URL: ${process.env.PROJECT_URL}`);
+              return;
+            }
+
+            const [, owner, projectNumber] = projectMatch;
+            const data = await github.graphql(
+              `query($owner: String!, $number: Int!, $contentId: ID!) {
+                organization(login: $owner) {
+                  projectV2(number: $number) {
+                    id
+                    field(name: "Status") {
+                      ... on ProjectV2SingleSelectField {
+                        id
+                        options {
+                          id
+                          name
+                        }
+                      }
+                    }
+                  }
+                }
+                node(id: $contentId) {
+                  ... on Issue {
+                    projectItems(first: 20) {
+                      nodes {
+                        id
+                        project { id }
+                      }
+                    }
+                  }
+                  ... on PullRequest {
+                    projectItems(first: 20) {
+                      nodes {
+                        id
+                        project { id }
+                      }
+                    }
+                  }
+                }
+              }`,
+              {
+                owner,
+                number: Number(projectNumber),
+                contentId: content.node_id,
+              },
+            );
+
+            const project = data.organization?.projectV2;
+            const todo = project?.field?.options?.find(({ name }) => name === 'Todo');
+            if (!project?.id || !project.field?.id || !todo?.id) {
+              core.setFailed('Could not find the project, Status field, or Todo option.');
+              return;
+            }
+
+            let item = data.node?.projectItems?.nodes?.find(
+              ({ project: itemProject }) => itemProject.id === project.id,
+            );
+
+            if (!item) {
+              const added = await github.graphql(
+                `mutation($projectId: ID!, $contentId: ID!) {
+                  addProjectV2ItemById(
+                    input: { projectId: $projectId, contentId: $contentId }
+                  ) {
+                    item { id }
+                  }
+                }`,
+                {
+                  projectId: project.id,
+                  contentId: content.node_id,
+                },
+              );
+              item = added.addProjectV2ItemById?.item;
+            }
+
+            if (!item?.id) {
+              core.setFailed(`Could not find or add the project item for ${content.html_url}.`);
+              return;
+            }
+
+            await github.graphql(
+              `mutation(
+                $projectId: ID!,
+                $itemId: ID!,
+                $fieldId: ID!,
+                $optionId: String!
+              ) {
+                updateProjectV2ItemFieldValue(
+                  input: {
+                    projectId: $projectId,
+                    itemId: $itemId,
+                    fieldId: $fieldId,
+                    value: { singleSelectOptionId: $optionId }
+                  }
+                ) {
+                  projectV2Item { id }
+                }
+              }`,
+              {
+                projectId: project.id,
+                itemId: item.id,
+                fieldId: project.field.id,
+                optionId: todo.id,
+              },
+            );
+
+            core.info(`Reset reopened item to Todo: ${content.html_url}`);
+
       - uses: actions/add-to-project@v1.0.2
+        if: ${{ github.event.action != 'reopened' }}
         with:
           project-url: ${{ inputs.project-url }}
           github-token: ${{ secrets.token }}
