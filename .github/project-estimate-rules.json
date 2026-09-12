@@ -90,6 +90,12 @@
     "estimate": 0.25
   },
   {
+    "name": "property-daily-auction-lot-completion",
+    "repository": "ditrois/property",
+    "title_pattern": "^Lengkapi data lot lelang sampai tugas kosong\\b",
+    "estimate": 0.5
+  },
+  {
     "name": "property-monthly-developer-sourcing",
     "repository": "ditrois/property",
     "title_pattern": "^Cari 1 developer property di Gianyar, Denpasar, Bangli, Klungkung, dan sekitarnya\\b",

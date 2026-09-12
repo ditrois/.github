@@ -108,6 +108,12 @@ const recurringIssues = [
   ],
   [
     'ditrois/property',
+    'Lengkapi data lot lelang sampai tugas kosong — 2026-09-12',
+    0.5,
+    ['auction-lot-completion', 'daily-task'],
+  ],
+  [
+    'ditrois/property',
     'Cari 1 developer property di Gianyar, Denpasar, Bangli, Klungkung, dan sekitarnya — Juli 2026',
     4,
   ],
@@ -206,7 +212,7 @@ test('shared workflow loads repository-aware rules after adding the item', () =>
 });
 
 test('the canonical rule set is complete and repository-scoped', () => {
-  assert.equal(rules.length, 22);
+  assert.equal(rules.length, 23);
   assert.equal(new Set(rules.map(({ name }) => name)).size, rules.length);
   assert.ok(rules.every(({ repository }) => repository.startsWith('ditrois/')));
   assert.ok(rules.every(({ title_pattern: title, label_pattern: label }) => title || label));
