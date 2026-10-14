@@ -1,6 +1,6 @@
 name: Add to project (reusable)
 
-# Reusable workflow for ditrois org. Adds the calling repo's issue/PR
+# Reusable workflow for ditrois org. Adds the calling repo's issue
 # to a Projects v2 board.
 #
 # Caller passes the project URL and the PAT (stored as a per-repo
@@ -29,7 +29,15 @@ on:
 
 jobs:
   add:
-    runs-on: self-hosted
+    if: ${{ github.event_name == 'issues' }}
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: read
+    concurrency:
+      group: project-issue-${{ github.repository }}-${{ github.event.issue.number }}
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
     steps:
       - name: Restore reopened item to Todo
         if: ${{ github.event.action == 'reopened' }}
@@ -39,9 +47,9 @@ jobs:
         with:
           github-token: ${{ secrets.token }}
           script: |
-            const content = context.payload.issue ?? context.payload.pull_request;
-            if (!content) {
-              core.setFailed('No issue or pull request payload for reopened event.');
+            const content = context.payload.issue;
+            if (context.eventName !== 'issues' || !content || content.pull_request) {
+              core.info('Not an issue event; project update skipped.');
               return;
             }
 
@@ -72,14 +80,6 @@ jobs:
                 }
                 node(id: $contentId) {
                   ... on Issue {
-                    projectItems(first: 20) {
-                      nodes {
-                        id
-                        project { id }
-                      }
-                    }
-                  }
-                  ... on PullRequest {
                     projectItems(first: 20) {
                       nodes {
                         id
@@ -172,7 +172,7 @@ jobs:
           script: |
             const issue = context.payload.issue;
             const repository = context.payload.repository?.full_name;
-            if (!issue || !repository) {
+            if (context.eventName !== 'issues' || !issue || issue.pull_request || !repository) {
               core.info('No issue payload; deterministic estimation skipped.');
               return;
             }
