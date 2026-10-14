@@ -1,6 +1,6 @@
 name: Add to project
 
-# Adds new/updated issues and PRs in this repo to the org-level
+# Adds new/updated issues in this repo to the org-level
 # Projects v2 board "Ditrois" (#4).
 #
 # Reusable workflow source: ditrois/.github
@@ -8,11 +8,14 @@ name: Add to project
 on:
   issues:
     types: [opened, reopened, edited, labeled, assigned, transferred]
-  pull_request_target:
-    types: [opened, reopened, edited, labeled, assigned, ready_for_review]
+
+permissions:
+  contents: read
+  issues: read
 
 jobs:
   call:
+    if: ${{ github.event_name == 'issues' }}
     uses: ditrois/.github/.github/workflows/add-to-project.yml@main
     secrets:
       token: ${{ secrets.ADD_TO_PROJECT_PAT }}
