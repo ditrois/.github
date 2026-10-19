@@ -1,5 +1,11 @@
 [
   {
+    "name": "general-daily-human-work-log",
+    "repository": "ditrois/general",
+    "title_pattern": "^Rencana & laporan kerja — (?:Jyo|Ersa|Devi|Prema) — \\d{4}-\\d{2}-\\d{2}$",
+    "estimate": 0.25
+  },
+  {
     "name": "seratus-art-daily-marketplace-posting",
     "repository": "ditrois/seratus-art",
     "title_pattern": "^Posting 5 produk seratus art di FB Marketplace\\b",
