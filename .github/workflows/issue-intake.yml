@@ -1,0 +1,47 @@
+name: Issue intake (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      project-url:
+        type: string
+        required: true
+    secrets:
+      token:
+        required: true
+
+jobs:
+  assign:
+    if: ${{ github.event_name == 'issues' && github.event.action == 'opened' && !github.event.issue.pull_request && !github.event.issue.assignees[0] }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: ditrois/.github
+          ref: main
+          persist-credentials: false
+      - name: Preserve repository assignment policy
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const { assignIssue } = require('./.github/scripts/issue-assignment.cjs');
+            const rules = require('./.github/issue-assignment-rules.json');
+            await assignIssue({ context, github, core, rules });
+
+  project:
+    needs: assign
+    # Assignment failure/skip must not prevent Project, reopen or estimate processing.
+    if: ${{ !cancelled() && github.event_name == 'issues' }}
+    uses: ditrois/.github/.github/workflows/add-to-project.yml@main
+    permissions:
+      contents: read
+      issues: read
+    with:
+      project-url: ${{ inputs.project-url }}
+    secrets:
+      token: ${{ secrets.token }}

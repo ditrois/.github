@@ -1,6 +1,26 @@
 # .github
 Org-level shared workflows and config
 
+The issue-intake reusable workflow combines the existing assignment policy for
+six allowlisted repositories with the read-only Project workflow. Other callers,
+including OpenSID-Issues, retain read-only permissions and never auto-assign.
+See `.github/issue-assignment-rules.json`; existing assignees, manager exceptions
+and Personal's recurring exclusion are preserved.
+
+The `ci-scope` composite action skips only confidently irrelevant PR changes.
+Pushes to default branches always run full tests. Unknown paths, missing git
+history and invalid configuration fail open to full testing. Renames check both
+deleted and added paths. Every
+consumer keeps an always-running CI gate; no workflow-level path skip hides a
+required result. Gumchord web and worker scopes remain separate.
+
+Rollout order: merge this shared PR first; then Property's read-only drift
+compatibility and the six intake callers; merge General's drift repair changes
+last, so repair cannot revert the new caller or activate it before its dependency.
+CI scope consumers pin the tested shared commit, not an unreviewed branch.
+No live settings, PATs, issue data, scheduler ownership or ledgers are changed
+by preparing these PRs.
+
 Add to project accepts issue events only; PRs are not added or estimated by this workflow.
 The reusable job and canonical caller both guard the event type. Reopened issues return
 to Todo, and the existing repository-scoped estimate rules are unchanged.

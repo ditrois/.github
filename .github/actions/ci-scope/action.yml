@@ -1,0 +1,18 @@
+name: CI scope
+description: Skip only confidently irrelevant PR changes; default branch and uncertain diffs run everything.
+inputs:
+  mode:
+    description: generic, property, gumchord-web or gumchord-worker
+    default: generic
+outputs:
+  run:
+    description: Whether this workflow's full tests are needed
+    value: ${{ steps.scope.outputs.run }}
+runs:
+  using: composite
+  steps:
+    - id: scope
+      shell: bash
+      env:
+        CI_SCOPE_MODE: ${{ inputs.mode }}
+      run: node "$GITHUB_ACTION_PATH/ci-scope.mjs"

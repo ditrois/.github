@@ -1,0 +1,14 @@
+name: CI result gate
+description: Fail unless relevant tests succeeded or an explicit no-op was verified
+inputs:
+  results:
+    description: JSON encoded needs context
+    required: true
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        CI_RESULTS: ${{ inputs.results }}
+      run: node "$GITHUB_ACTION_PATH/ci-gate.mjs"
+
