@@ -29,6 +29,11 @@ function estimateFor(repository, title, labels = []) {
 }
 
 const recurringIssues = [
+  ...['Jyo', 'Ersa', 'Devi', 'Prema'].map((person) => [
+    'ditrois/general',
+    `Rencana & laporan kerja — ${person} — 2026-10-19`,
+    0.25,
+  ]),
   [
     'ditrois/seratus-art',
     'Posting 5 produk seratus art di FB Marketplace, Kamis, 23 Juli 2026',
@@ -149,6 +154,12 @@ const recurringIssues = [
   ],
 ];
 
+test('daily work-log estimate is restricted to the approved titles and repository', () => {
+  assert.equal(estimateFor('ditrois/property', 'Rencana & laporan kerja — Ersa — 2026-10-19'), null);
+  assert.equal(estimateFor('ditrois/general', 'Rencana & laporan kerja — Dewik — 2026-10-19'), null);
+  assert.equal(estimateFor('ditrois/general', 'Rencana & laporan kerja — Ersa — 2026-10-19 extra'), null);
+});
+
 for (const [repository, title, expected, labels = []] of recurringIssues) {
   test(`${repository}: ${title}`, () => {
     assert.equal(estimateFor(repository, title, labels), expected);
@@ -212,7 +223,7 @@ test('shared workflow loads repository-aware rules after adding the item', () =>
 });
 
 test('the canonical rule set is complete and repository-scoped', () => {
-  assert.equal(rules.length, 23);
+  assert.equal(rules.length, 24);
   assert.equal(new Set(rules.map(({ name }) => name)).size, rules.length);
   assert.ok(rules.every(({ repository }) => repository.startsWith('ditrois/')));
   assert.ok(rules.every(({ title_pattern: title, label_pattern: label }) => title || label));
