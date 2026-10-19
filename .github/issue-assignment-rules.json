@@ -1,0 +1,39 @@
+{
+  "ditrois/property": {
+    "assignee": "Madeersani",
+    "skip_labels": [
+      "Perlu Perhatian Manager"
+    ]
+  },
+  "ditrois/seratus-art": {
+    "assignee": "Madeersani",
+    "skip_labels": [
+      "Perlu Perhatian Manager"
+    ]
+  },
+  "ditrois/ditrois": {
+    "assignee": "Madeersani",
+    "skip_labels": [
+      "Perlu Perhatian Manager"
+    ]
+  },
+  "ditrois/general": {
+    "assignee": "nyomanjyotisa",
+    "skip_labels": [
+      "Perlu Perhatian Manager"
+    ]
+  },
+  "ditrois/documents": {
+    "assignee": "nyomanjyotisa",
+    "skip_labels": [
+      "Perlu Perhatian Manager"
+    ]
+  },
+  "ditrois/personal-jyo": {
+    "assignee": "nyomanjyotisa",
+    "skip_labels": [
+      "recurring",
+      "Perlu Perhatian Manager"
+    ]
+  }
+}

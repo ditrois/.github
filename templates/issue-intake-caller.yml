@@ -1,0 +1,20 @@
+name: Add to project
+
+# Assignment + Project metadata for the six explicitly configured repositories.
+# Other repositories retain the read-only add-to-project caller.
+on:
+  issues:
+    types: [opened, reopened, edited, labeled, assigned, transferred]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  call:
+    if: ${{ github.event_name == 'issues' }}
+    uses: ditrois/.github/.github/workflows/issue-intake.yml@main
+    secrets:
+      token: ${{ secrets.ADD_TO_PROJECT_PAT }}
+    with:
+      project-url: https://github.com/orgs/ditrois/projects/4
