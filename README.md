@@ -31,6 +31,8 @@ social-post cleanup, weekly autopost audit and weekly Not Planned review familie
 use 0.5 hours. The approved Permata Pering photo/price/input task also uses 0.5
 hours, matched by its exact title rather than broadly reducing other media work.
 These rules do not bulk-rewrite estimates already present on the Project board.
+The dated `Tindak lanjuti inquiry Rumah123` daily follow-up family also uses
+0.5 hours; the rule does not cover bulk chat exports or differently scoped work.
 
 All executable workflow jobs use GitHub-hosted Ubuntu. Merge this shared workflow and
 its caller template before the caller PRs in other repositories, so the drift detector
