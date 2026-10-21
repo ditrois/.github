@@ -12,7 +12,7 @@ on:
 
 jobs:
   assign:
-    if: ${{ github.event_name == 'issues' && github.event.action == 'opened' && !github.event.issue.pull_request && !github.event.issue.assignees[0] }}
+    if: ${{ vars.ISSUE_AUTOMATION_OWNER != 'property-web' && (github.event_name == 'issues' && github.event.action == 'opened' && !github.event.issue.pull_request && !github.event.issue.assignees[0]) }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -36,7 +36,7 @@ jobs:
   project:
     needs: assign
     # Assignment failure/skip must not prevent Project, reopen or estimate processing.
-    if: ${{ !cancelled() && github.event_name == 'issues' }}
+    if: ${{ vars.ISSUE_AUTOMATION_OWNER != 'property-web' && (!cancelled() && github.event_name == 'issues') }}
     uses: ditrois/.github/.github/workflows/add-to-project.yml@main
     permissions:
       contents: read

@@ -22,7 +22,16 @@ test('caller and reusable job reject non-issue events before scheduling', () => 
   assert.match(caller, /types: \[opened, reopened, edited, labeled, assigned, transferred\]/);
   assert.doesNotMatch(caller, /pull_request|workflow_dispatch/);
   for (const source of [caller, workflow]) {
-    assert.match(source, /if: \$\{\{ github.event_name == 'issues' \}\}/);
+    const gate = source.match(/if: \$\{\{ (.*) \}\}/)?.[1];
+    assert.ok(gate);
+    for (const owner of ['', 'actions', 'property-web']) {
+      for (const eventName of ['issues', 'pull_request', 'workflow_dispatch']) {
+        const enabled = new Function('vars', 'github', `return (${gate})`)(
+          { ISSUE_AUTOMATION_OWNER: owner }, { event_name: eventName },
+        );
+        assert.equal(enabled, owner !== 'property-web' && eventName === 'issues');
+      }
+    }
   }
   assert.match(workflow, /runs-on: ubuntu-latest/);
   assert.doesNotMatch(workflow, /self-hosted|\.\.\. on PullRequest/);
