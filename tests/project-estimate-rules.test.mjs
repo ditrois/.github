@@ -29,6 +29,41 @@ function estimateFor(repository, title, labels = []) {
 }
 
 const recurringIssues = [
+  ...['Twitter', 'Facebook', 'IG', 'Instagram', 'X'].map((platform) => [
+    'ditrois/property',
+    `Hapus semua postingan aset lelang yang sudah kadaluarsa di ${platform} info lelang`,
+    0.5,
+  ]),
+  [
+    'ditrois/property',
+    'Hapus semua postingan aset lelang yang sudah kedaluwarsa di Instagram info lelang',
+    0.5,
+  ],
+  ...['2026-09-28', '2026-10-05'].map((date) => [
+    'ditrois/property',
+    `Cek hasil auto-posting semua platform — Dewik Property Bali — Minggu ${date}`,
+    0.5,
+  ]),
+  [
+    'ditrois/property',
+    'Cek hasil auto-posting semua platform — Devi Property Bali — Minggu 2026-10-19',
+    0.5,
+  ],
+  [
+    'ditrois/property',
+    'Update foto & harga beberapa property + input kavling Permata Pering',
+    0.5,
+  ],
+  ...['2026-W35', '2026-W36', '2026-W42'].map((week) => [
+    'ditrois/general',
+    `Review issue Not Planned — Fitri — minggu ${week}`,
+    0.5,
+  ]),
+  [
+    'ditrois/general',
+    'Review issue Not Planned — Ersa — minggu 2026-W43',
+    0.5,
+  ],
   ...['Jyo', 'Ersa', 'Devi', 'Prema'].map((person) => [
     'ditrois/general',
     `Rencana & laporan kerja — ${person} — 2026-10-19`,
@@ -209,6 +244,22 @@ test('unspecified recurring families remain on the general estimator', () => {
   );
 });
 
+test('half-hour operational rules do not match broader work or other repositories', () => {
+  const titles = [
+    ['ditrois/property', 'Hapus semua postingan aset lelang yang sudah kadaluarsa di Twitter info lelang'],
+    ['ditrois/property', 'Cek hasil auto-posting semua platform — Dewik Property Bali — Minggu 2026-10-05'],
+    ['ditrois/property', 'Update foto & harga beberapa property + input kavling Permata Pering'],
+    ['ditrois/general', 'Review issue Not Planned — Fitri — minggu 2026-W42'],
+  ];
+  for (const [repository, title] of titles) {
+    assert.equal(estimateFor('ditrois/rumahpost', title), null);
+    assert.equal(estimateFor(repository, `Implementasi ${title}`), null);
+    assert.equal(estimateFor(repository, `${title} dan migrasi sistem`), null);
+  }
+  assert.equal(estimateFor('ditrois/property', 'Update foto & harga semua properti + input 100 kavling baru'), null);
+  assert.equal(estimateFor('ditrois/property', 'Hapus semua postingan aset lelang yang sudah kadaluarsa di Facebook Marketplace'), null);
+});
+
 test('shared workflow loads repository-aware rules after adding the item', () => {
   const workflow = readFileSync(
     new URL('../.github/workflows/add-to-project.yml', import.meta.url),
@@ -223,7 +274,7 @@ test('shared workflow loads repository-aware rules after adding the item', () =>
 });
 
 test('the canonical rule set is complete and repository-scoped', () => {
-  assert.equal(rules.length, 24);
+  assert.equal(rules.length, 28);
   assert.equal(new Set(rules.map(({ name }) => name)).size, rules.length);
   assert.ok(rules.every(({ repository }) => repository.startsWith('ditrois/')));
   assert.ok(rules.every(({ title_pattern: title, label_pattern: label }) => title || label));

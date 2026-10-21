@@ -1,5 +1,29 @@
 [
   {
+    "name": "property-expired-auction-social-post-cleanup",
+    "repository": "ditrois/property",
+    "title_pattern": "^Hapus semua postingan aset lelang yang sudah (?:kadaluarsa|kedaluwarsa) di (?:Twitter|X|Facebook|IG|Instagram) info lelang$",
+    "estimate": 0.5
+  },
+  {
+    "name": "property-weekly-autopost-health-audit",
+    "repository": "ditrois/property",
+    "title_pattern": "^Cek hasil auto-posting semua platform — .+ — Minggu \\d{4}-\\d{2}-\\d{2}$",
+    "estimate": 0.5
+  },
+  {
+    "name": "property-permata-pering-listing-update",
+    "repository": "ditrois/property",
+    "title_pattern": "^Update foto & harga beberapa property \\+ input kavling Permata Pering$",
+    "estimate": 0.5
+  },
+  {
+    "name": "general-weekly-not-planned-review",
+    "repository": "ditrois/general",
+    "title_pattern": "^Review issue Not Planned — .+ — minggu \\d{4}-W\\d{2}$",
+    "estimate": 0.5
+  },
+  {
     "name": "general-daily-human-work-log",
     "repository": "ditrois/general",
     "title_pattern": "^Rencana & laporan kerja — (?:Jyo|Ersa|Devi|Prema) — \\d{4}-\\d{2}-\\d{2}$",
