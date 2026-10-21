@@ -29,6 +29,11 @@ function estimateFor(repository, title, labels = []) {
 }
 
 const recurringIssues = [
+  ...['2026-10-12', '2026-10-13', '2026-10-14', '2026-10-16', '2026-10-19', '2026-10-20', '2026-10-21'].map((date) => [
+    'ditrois/property',
+    `Tindak lanjuti inquiry Rumah123 — ${date}`,
+    0.5,
+  ]),
   ...['Twitter', 'Facebook', 'IG', 'Instagram', 'X'].map((platform) => [
     'ditrois/property',
     `Hapus semua postingan aset lelang yang sudah kadaluarsa di ${platform} info lelang`,
@@ -260,6 +265,15 @@ test('half-hour operational rules do not match broader work or other repositorie
   assert.equal(estimateFor('ditrois/property', 'Hapus semua postingan aset lelang yang sudah kadaluarsa di Facebook Marketplace'), null);
 });
 
+test('daily Rumah123 inquiry follow-up rule is restricted to the exact dated task family', () => {
+  const title = 'Tindak lanjuti inquiry Rumah123 — 2026-10-20';
+  assert.equal(estimateFor('ditrois/general', title), null);
+  assert.equal(estimateFor('ditrois/property', `${title} dan impor seluruh riwayat`), null);
+  assert.equal(estimateFor('ditrois/property', `Implementasi ${title}`), null);
+  assert.equal(estimateFor('ditrois/property', 'Tindak lanjuti inquiry Rumah123'), null);
+  assert.equal(estimateFor('ditrois/property', 'Kumpulkan seluruh chat WhatsApp 100 pembeli/calon pembeli tanah terakhir — Ersa'), null);
+});
+
 test('shared workflow loads repository-aware rules after adding the item', () => {
   const workflow = readFileSync(
     new URL('../.github/workflows/add-to-project.yml', import.meta.url),
@@ -274,7 +288,7 @@ test('shared workflow loads repository-aware rules after adding the item', () =>
 });
 
 test('the canonical rule set is complete and repository-scoped', () => {
-  assert.equal(rules.length, 28);
+  assert.equal(rules.length, 29);
   assert.equal(new Set(rules.map(({ name }) => name)).size, rules.length);
   assert.ok(rules.every(({ repository }) => repository.startsWith('ditrois/')));
   assert.ok(rules.every(({ title_pattern: title, label_pattern: label }) => title || label));

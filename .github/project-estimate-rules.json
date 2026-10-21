@@ -1,5 +1,11 @@
 [
   {
+    "name": "property-daily-rumah123-inquiry-follow-up",
+    "repository": "ditrois/property",
+    "title_pattern": "^Tindak lanjuti inquiry Rumah123 — \\d{4}-\\d{2}-\\d{2}$",
+    "estimate": 0.5
+  },
+  {
     "name": "property-expired-auction-social-post-cleanup",
     "repository": "ditrois/property",
     "title_pattern": "^Hapus semua postingan aset lelang yang sudah (?:kadaluarsa|kedaluwarsa) di (?:Twitter|X|Facebook|IG|Instagram) info lelang$",
