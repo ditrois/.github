@@ -29,7 +29,7 @@ on:
 
 jobs:
   add:
-    if: ${{ github.event_name == 'issues' }}
+    if: ${{ vars.ISSUE_AUTOMATION_OWNER != 'property-web' && (github.event_name == 'issues') }}
     timeout-minutes: 10
     permissions:
       contents: read
@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Restore reopened item to Todo
-        if: ${{ github.event.action == 'reopened' }}
+        if: ${{ vars.ISSUE_AUTOMATION_OWNER != 'property-web' && (github.event.action == 'reopened') }}
         uses: actions/github-script@v7
         env:
           PROJECT_URL: ${{ inputs.project-url }}
@@ -158,7 +158,7 @@ jobs:
             core.info(`Reset reopened item to Todo: ${content.html_url}`);
 
       - uses: actions/add-to-project@v1.0.2
-        if: ${{ github.event.action != 'reopened' }}
+        if: ${{ vars.ISSUE_AUTOMATION_OWNER != 'property-web' && (github.event.action != 'reopened') }}
         with:
           project-url: ${{ inputs.project-url }}
           github-token: ${{ secrets.token }}
