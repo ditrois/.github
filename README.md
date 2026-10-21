@@ -25,6 +25,13 @@ Add to project accepts issue events only; PRs are not added or estimated by this
 The reusable job and canonical caller both guard the event type. Reopened issues return
 to Todo, and the existing repository-scoped estimate rules are unchanged.
 
+The canonical `.github/project-estimate-rules.json` is loaded from `main` by
+both issue intake and General's scheduled estimator/backfill. The expired-auction
+social-post cleanup, weekly autopost audit and weekly Not Planned review families
+use 0.5 hours. The approved Permata Pering photo/price/input task also uses 0.5
+hours, matched by its exact title rather than broadly reducing other media work.
+These rules do not bulk-rewrite estimates already present on the Project board.
+
 All executable workflow jobs use GitHub-hosted Ubuntu. Merge this shared workflow and
 its caller template before the caller PRs in other repositories, so the drift detector
 does not restore an outdated template. Existing queued runs use their original workflow
