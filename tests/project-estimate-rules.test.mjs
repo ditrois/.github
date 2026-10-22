@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
 
 const rules = JSON.parse(
@@ -274,17 +274,10 @@ test('daily Rumah123 inquiry follow-up rule is restricted to the exact dated tas
   assert.equal(estimateFor('ditrois/property', 'Kumpulkan seluruh chat WhatsApp 100 pembeli/calon pembeli tanah terakhir — Ersa'), null);
 });
 
-test('shared workflow loads repository-aware rules after adding the item', () => {
-  const workflow = readFileSync(
-    new URL('../.github/workflows/add-to-project.yml', import.meta.url),
-    'utf8',
-  );
-
-  assert.match(workflow, /actions\/add-to-project@v1\.0\.2/);
-  assert.match(workflow, /Apply deterministic estimate/);
-  assert.match(workflow, /ruleRepository\.toLowerCase\(\) === repository\.toLowerCase\(\)/);
-  assert.match(workflow, /label_pattern: labelPattern/);
-  assert.match(workflow, /issueLabels\.some/);
+test('canonical web estimate rules survive retirement of the shared workflow', () => {
+  assert.equal(existsSync(new URL('../.github/workflows/add-to-project.yml', import.meta.url)), false);
+  assert.ok(rules.some(rule => rule.estimate === 0.25));
+  assert.ok(rules.some(rule => rule.estimate === 0.5));
 });
 
 test('the canonical rule set is complete and repository-scoped', () => {

@@ -1,40 +1,34 @@
 # .github
-Org-level shared workflows and config
 
-The issue-intake reusable workflow combines the existing assignment policy for
-six allowlisted repositories with the read-only Project workflow. Other callers,
-including OpenSID-Issues, retain read-only permissions and never auto-assign.
-See `.github/issue-assignment-rules.json`; existing assignees, manager exceptions
-and Personal's recurring exclusion are preserved.
+Organization-level policy data and shared PR/CI actions.
+
+## Issue operations belong to Property web
+
+Assignment, Project #4 intake/reopen handling, deterministic estimates,
+missing-estimate backfill, stale handling and issue alerts run in the Property
+web scheduler. The production handoff and first natural tick were verified on
+22 October 2026 at 09:15:16 WITA. See
+[Property's migration guide](https://github.com/ditrois/property/blob/prod/docs/issue-operations-migration.md).
+
+The retired `add-to-project.yml` and `issue-intake.yml` reusable workflows have
+been removed. Callers in the other repositories are retired as well. Tests
+prevent restoring issue-triggered workflows or references to those reusables.
+Historical caller templates are inert rollback references, not workflows to
+install. Restore them only as part of a separately approved coordinated rollback.
+
+Keep `.github/issue-assignment-rules.json` and
+`.github/project-estimate-rules.json`: the web worker reads these files from
+`main`. The six assignment policies, manager/recurring exclusions and fractional
+0.25/0.5-hour estimates are unchanged. Rule changes do not bulk-rewrite existing
+Project estimates.
+
+## PR/CI actions remain unchanged
 
 The `ci-scope` composite action skips only confidently irrelevant PR changes.
 Pushes to default branches always run full tests. Unknown paths, missing git
 history and invalid configuration fail open to full testing. Renames check both
-deleted and added paths. Every
-consumer keeps an always-running CI gate; no workflow-level path skip hides a
-required result. Gumchord web and worker scopes remain separate.
+deleted and added paths. Consumers keep an always-running CI gate and pin the
+tested shared action commit. Gumchord web and worker scopes remain separate.
 
-Rollout order: merge this shared PR first; then Property's read-only drift
-compatibility and the six intake callers; merge General's drift repair changes
-last, so repair cannot revert the new caller or activate it before its dependency.
-CI scope consumers pin the tested shared commit, not an unreviewed branch.
-No live settings, PATs, issue data, scheduler ownership or ledgers are changed
-by preparing these PRs.
-
-Add to project accepts issue events only; PRs are not added or estimated by this workflow.
-The reusable job and canonical caller both guard the event type. Reopened issues return
-to Todo, and the existing repository-scoped estimate rules are unchanged.
-
-The canonical `.github/project-estimate-rules.json` is loaded from `main` by
-both issue intake and General's scheduled estimator/backfill. The expired-auction
-social-post cleanup, weekly autopost audit and weekly Not Planned review families
-use 0.5 hours. The approved Permata Pering photo/price/input task also uses 0.5
-hours, matched by its exact title rather than broadly reducing other media work.
-These rules do not bulk-rewrite estimates already present on the Project board.
-The dated `Tindak lanjuti inquiry Rumah123` daily follow-up family also uses
-0.5 hours; the rule does not cover bulk chat exports or differently scoped work.
-
-All executable workflow jobs use GitHub-hosted Ubuntu. Merge this shared workflow and
-its caller template before the caller PRs in other repositories, so the drift detector
-does not restore an outdated template. Existing queued runs use their original workflow
-revision and are not proof of the new configuration.
+This cleanup changes no production settings, tokens, leave data, security
+settings or deployment behavior.
