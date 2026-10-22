@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
 import policy from '../.github/scripts/issue-assignment.cjs';
 const rules = JSON.parse(readFileSync(new URL('../.github/issue-assignment-rules.json', import.meta.url)));
@@ -40,12 +40,13 @@ test('unassigned issue uses its existing repository default', async () => {
   }}}});
   assert.deepEqual(writes,[{owner:'ditrois',repo:'property',issue_number:1,assignees:['Madeersani']}]);
 });
-test('read-only Project reusable remains untouched; write helper preserves project after failure', () => {
-  const original = readFileSync(new URL('../.github/workflows/add-to-project.yml',import.meta.url),'utf8');
-  const intake = readFileSync(new URL('../.github/workflows/issue-intake.yml',import.meta.url),'utf8');
-  assert.doesNotMatch(original,/issues: write/);
-  assert.match(intake,/needs: assign/);
-  assert.match(intake,/!cancelled\(\).*github.event_name == 'issues'/);
-  assert.match(intake,/permissions:\n      contents: read\n      issues: read/);
-  assert.match(intake,/ref: main/);
+test('canonical assignment policy survives retirement of the Actions helpers', () => {
+  for (const name of ['add-to-project.yml', 'issue-intake.yml']) {
+    assert.equal(existsSync(new URL('../.github/workflows/' + name, import.meta.url)), false);
+  }
+  for (const rule of Object.values(rules)) {
+    assert.equal(typeof rule.assignee, 'string');
+    assert.ok(rule.assignee.length > 0);
+    assert.ok(Array.isArray(rule.skip_labels));
+  }
 });
