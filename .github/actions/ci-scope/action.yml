@@ -1,5 +1,5 @@
 name: CI scope
-description: Skip only confidently irrelevant PR changes; default branch and uncertain diffs run everything.
+description: Skip only confidently irrelevant PR or complete push-range changes; uncertain diffs run everything.
 inputs:
   mode:
     description: generic, property, gumchord-web or gumchord-worker
