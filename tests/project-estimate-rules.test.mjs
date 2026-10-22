@@ -142,6 +142,11 @@ const recurringIssues = [
   ],
   [
     'ditrois/property',
+    'Posting properti reguler FB Marketplace — 2026-10-22',
+    0.5,
+  ],
+  [
+    'ditrois/property',
     'Posting produk non-properti di FB Marketplace, Senin, 6 Juli 2026',
     0.5,
   ],
@@ -198,6 +203,18 @@ test('daily work-log estimate is restricted to the approved titles and repositor
   assert.equal(estimateFor('ditrois/property', 'Rencana & laporan kerja — Ersa — 2026-10-19'), null);
   assert.equal(estimateFor('ditrois/general', 'Rencana & laporan kerja — Dewik — 2026-10-19'), null);
   assert.equal(estimateFor('ditrois/general', 'Rencana & laporan kerja — Ersa — 2026-10-19 extra'), null);
+});
+
+test('Marketplace posting titles remain repository-scoped and anchored', () => {
+  for (const title of [
+    'Tambah at least 5 postingan baru di FB marketplace per hari — 2026-10-22',
+    'Posting properti reguler FB Marketplace — 2026-10-22',
+  ]) {
+    assert.equal(estimateFor('ditrois/property', title), 0.5);
+    assert.equal(estimateFor('ditrois/general', title), null);
+    assert.equal(estimateFor('ditrois/property', `Implementasi ${title}`), null);
+  }
+  assert.equal(estimateFor('ditrois/property', 'Posting properti reguler FB MarketplaceX'), null);
 });
 
 for (const [repository, title, expected, labels = []] of recurringIssues) {

@@ -110,7 +110,7 @@
   {
     "name": "property-daily-marketplace-posting",
     "repository": "ditrois/property",
-    "title_pattern": "^Tambah at least 5 postingan baru di FB marketplace per hari\\b",
+    "title_pattern": "^(?:Tambah at least 5 postingan baru di FB marketplace per hari|Posting properti reguler FB Marketplace)\\b",
     "estimate": 0.5
   },
   {
