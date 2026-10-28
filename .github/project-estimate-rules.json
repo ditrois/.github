@@ -1,5 +1,11 @@
 [
   {
+    "name": "opensid-daily-upstream-report",
+    "repository": "ditrois/OpenSID-Issues",
+    "title_pattern": "^Laporkan 5 bug OpenSID ke repo resmi — \\d{4}-\\d{2}-\\d{2}$",
+    "estimate": 1.5
+  },
+  {
     "name": "property-daily-rumah123-inquiry-follow-up",
     "repository": "ditrois/property",
     "title_pattern": "^Tindak lanjuti inquiry Rumah123 — \\d{4}-\\d{2}-\\d{2}$",
