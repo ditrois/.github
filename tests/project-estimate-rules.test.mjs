@@ -29,6 +29,7 @@ function estimateFor(repository, title, labels = []) {
 }
 
 const recurringIssues = [
+  ['ditrois/OpenSID-Issues', 'Laporkan 5 bug OpenSID ke repo resmi — 2026-10-29', 1.5],
   ...['2026-10-12', '2026-10-13', '2026-10-14', '2026-10-16', '2026-10-19', '2026-10-20', '2026-10-21'].map((date) => [
     'ditrois/property',
     `Tindak lanjuti inquiry Rumah123 — ${date}`,
@@ -298,8 +299,18 @@ test('canonical web estimate rules survive retirement of the shared workflow', (
 });
 
 test('the canonical rule set is complete and repository-scoped', () => {
-  assert.equal(rules.length, 29);
+  assert.equal(rules.length, 30);
   assert.equal(new Set(rules.map(({ name }) => name)).size, rules.length);
   assert.ok(rules.every(({ repository }) => repository.startsWith('ditrois/')));
   assert.ok(rules.every(({ title_pattern: title, label_pattern: label }) => title || label));
+});
+
+test('OpenSID daily reporting estimate is exactly 1.5 and limited to the reporting task', () => {
+  const title = 'Laporkan 5 bug OpenSID ke repo resmi — 2026-10-29';
+  assert.equal(estimateFor('ditrois/OpenSID-Issues', title), 1.5);
+  assert.equal(estimateFor('ditrois/general', title), null);
+  assert.equal(estimateFor('ditrois/property', title), null);
+  assert.equal(estimateFor('ditrois/OpenSID-Issues', `${title} dan perbaiki semuanya`), null);
+  assert.equal(estimateFor('ditrois/OpenSID-Issues', 'Panduan lengkap bug testing OpenSID — Madeersani'), null);
+  assert.equal(estimateFor('ditrois/OpenSID-Issues', 'Laporkan 50 bug OpenSID ke repo resmi — 2026-10-29'), null);
 });
